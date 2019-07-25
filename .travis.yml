@@ -12,3 +12,5 @@ jobs:
       script: pylint osbuild assemblers/* stages/*
     - name: pipeline-noop
       script: sudo env "PATH=$PATH" python3 -m osbuild --libdir . --output . samples/noop.json
+    - name: pipeline-yum
+      script: sudo env "PATH=$PATH" python3 -m osbuild --libdir . --output . samples/yum.json
