@@ -15,7 +15,8 @@
         "packages": [
           "@Core",
           "selinux-policy-targeted",
-          "grub2-pc"
+          "grub2-pc",
+          "firewalld"
         ]
       }
     },

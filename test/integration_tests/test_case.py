@@ -8,8 +8,9 @@ from .run import boot_image, extract_image
 
 
 class IntegrationTestType(Enum):
-    EXTRACT=0
-    BOOT_WITH_QEMU=1
+    NOOP=0
+    EXTRACT=1
+    BOOT_WITH_QEMU=2
 
 
 @dataclass
@@ -24,7 +25,7 @@ class IntegrationTestCase:
         run_osbuild(rel_path(f"pipelines/{self.pipeline}"))
         if self.type == IntegrationTestType.BOOT_WITH_QEMU:
             self.boot_and_run()
-        else:
+        elif self.type == IntegrationTestType.EXTRACT:
             self.extract_and_run()
 
     def boot_and_run(self):

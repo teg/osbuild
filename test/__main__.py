@@ -9,28 +9,12 @@ from test.integration_tests.config import *
 logging.basicConfig(level=logging.getLevelName(os.environ.get("TESTS_LOGLEVEL", "INFO")))
 
 
-def test_web_server_with_curl():
-    cmd = ["curl", "-s", "http://127.0.0.1:8888/index"]
-    logging.info(f"Running curl: {cmd}")
-    curl = subprocess.run(cmd, capture_output=True)
-    logging.info(f"Curl returned: code={curl.returncode}, stdout={curl.stdout.decode()}, stderr={curl.stderr.decode()}")
-    assert curl.returncode == 0
-    assert curl.stdout.decode("utf-8").strip() == "hello, world!"
-
-
-def test_timezone(extract_dir):
-    link = os.readlink(f"{extract_dir}/etc/localtime")
-    assert "Europe/Prague" in link
-
-
-def test_firewall(extract_dir):
-    with open(f"{extract_dir}/etc/firewalld/zones/public.xml") as f:
-        content = f.read()
-        assert 'service name="http"' in content
-        assert 'service name="ftp"' in content
-        assert 'service name="telnet"' not in content
-        assert 'port port="53" protocol="tcp"' in content
-        assert 'port port="88" protocol="udp"' in content
+def test_is_running():
+    cmd = ["systemctl", "is-system-running", "--wait"]
+    logging.info(f"Running: {cmd}")
+    systemctl = subprocess.run(cmd, capture_output=True)
+    logging.info(f"systemctl ruternud: code={systemctl.returncode}, stdout={systemctl.stdout.decode()}")
+    assert systemctl.returncode == 0
 
 
 if __name__ == '__main__':
@@ -43,29 +27,15 @@ if __name__ == '__main__':
     logging.info(f"Using {OUTPUT_DIR} for output images storage.")
     logging.info(f"Using {OSBUILD} for building images.")
 
-    web_server = IntegrationTestCase(
-        name="web-server",
-        pipeline="web-server.json",
-        output_image="web-server.qcow2",
-        test_cases=[test_web_server_with_curl],
+    boot = IntegrationTestCase(
+        name="boot",
+        pipeline="base.json",
+        output_image="base.qcow2",
+        test_cases=[test_is_running],
         type=IntegrationTestType.BOOT_WITH_QEMU
     )
-    timezone = IntegrationTestCase(
-        name="timezone",
-        pipeline="timezone.json",
-        output_image="timezone.tar.xz",
-        test_cases=[test_timezone],
-        type=IntegrationTestType.EXTRACT
-    )
-    firewall = IntegrationTestCase(
-        name="firewall",
-        pipeline="firewall.json",
-        output_image="firewall.tar.xz",
-        test_cases=[test_firewall],
-        type=IntegrationTestType.EXTRACT
-    )
 
-    cases = [web_server, timezone, firewall]
+    cases = [boot]
 
     if args.list:
         print("Available test cases:")

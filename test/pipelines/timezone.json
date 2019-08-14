@@ -12,8 +12,13 @@
             "gpgkey": "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
           }
         },
-        "packages": ["@Core"]
-	}
+        "packages": [
+          "@Core",
+          "selinux-policy-targeted",
+          "grub2-pc",
+          "firewalld"
+        ]
+      }
     },
     {
       "name": "org.osbuild.timezone",
