@@ -5,6 +5,7 @@ import hashlib
 import os
 import subprocess
 import tempfile
+from . import tmpfs
 from . import treesum
 
 
@@ -41,7 +42,7 @@ class ObjectStore:
                 yield tmp
 
     @contextlib.contextmanager
-    def new_tree(self, tree_id, base_id=None):
+    def new_tree(self, tree_id, base_id=None, on_tmpfs=False):
         with tempfile.TemporaryDirectory(dir=self.store) as tmp:
             # the tree that is yielded will be added to the content store
             # on success as tree_id
@@ -50,13 +51,19 @@ class ObjectStore:
             link = f"{tmp}/link"
             os.mkdir(tree, mode=0o755)
 
-            if base_id:
-                # the base, the working tree and the output tree are all on
-                # the same fs, so attempt a lightweight copy if the fs
-                # supports it
-                subprocess.run(["cp", "--reflink=auto", "-a", f"{self.refs}/{base_id}/.", tree], check=True)
-
-            yield tree
+            if on_tmpfs:
+                with tmpfs.TmpFs() as tmp_tree:
+                    if base_id:
+                        subprocess.run(["cp", "-a", f"{self.refs}/{base_id}/.", tmp_tree], check=True)
+                    yield tmp_tree
+                    subprocess.run(["cp", "-a", f"{tmp_tree}/.", tree], check=True)
+            else:
+                if base_id:
+                    # In case the base, the working tree and the output tree are
+                    # all on the same fs attempt a lightweight copy if the fs
+                    # supports it.
+                    subprocess.run(["cp", "--reflink=auto", "-a", f"{self.refs}/{base_id}/.", tree], check=True)
+                yield tree
 
             # if the yield raises an exception, the working tree is cleaned
             # up by tempfile, otherwise, we save it in the correct place:
