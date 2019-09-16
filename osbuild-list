@@ -1,0 +1,22 @@
+#!/usr/bin/python3
+
+import argparse
+import json
+import os
+import osbuild
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Introspect osbulid pipelines")
+    parser.add_argument("pipelines_path", metavar="PIPELINES",
+                        help="directory of json files containing the available pipelines")
+    args = parser.parse_args()
+
+    for entry in os.listdir(args.pipelines_path):
+        with open(os.path.join(args.pipelines_path, entry)) as f:
+            pipeline = osbuild.load(json.load(f))
+            print(f"{pipeline.get_id()}: {entry}")
+
+
+if __name__ == "__main__":
+    main()
