@@ -178,7 +178,7 @@ class Pipeline:
         while pipeline.build:
             pipeline = pipeline.build
         pipeline.build = build_pipeline
-        pipeline.build.runner = runner
+        pipeline.runner = runner
 
     def description(self):
         description = {}
@@ -256,7 +256,13 @@ class Pipeline:
 
 
 def load_build(description):
-    return load(description["pipeline"]), description["runner"]
+    pipeline = description.get("pipeline")
+    if pipeline:
+        build_pipeline = load(pipeline)
+    else:
+        build_pipeline = None
+
+    return build_pipeline, description["runner"]
 
 
 def load(description):

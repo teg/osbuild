@@ -1,5 +1,8 @@
 {
   "pipeline": {
+    "build": {
+      "runner": "org.osbuild.ubuntu1804"
+    },
     "stages": [
       {
         "name": "org.osbuild.yum",
@@ -22,5 +25,5 @@
       }
     ]
   },
-  "runner": "org.osbuild.ubuntu1804"
+  "runner": "org.osbuild.fedora27"
 }
