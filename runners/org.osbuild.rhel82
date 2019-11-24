@@ -129,7 +129,7 @@ def python_alternatives():
     os.makedirs("/etc/alternatives", exist_ok=True)
     try:
         os.symlink("/usr/bin/python3.6", "/etc/alternatives/python3")
-    except FileExistError:
+    except FileExistsError:
         pass
 
 if __name__ == "__main__":
