@@ -25,7 +25,7 @@ jobs:
           echo "fastestmirror=1" >> /etc/dnf/dnf.conf
           echo "install_weak_deps=0" >> /etc/dnf/dnf.conf
           dnf -y upgrade
-          dnf -y install dnf-plugins-core git make rpm-build
+          dnf -y install dnf-plugins-core git mock spectool
           mkdir rpms
 
       - name: Clone repository
@@ -33,16 +33,15 @@ jobs:
         with:
           path: osbuild
 
-      - name: Install RPM build dependencies
-        run: dnf -y builddep osbuild/osbuild.spec
+      - name: Build SRPM
+        run: |
+          mkdir sources
+          spectool -g osbuild/osbuild.spec -C sources/
+          mock --buildsrpm --spec osbuild/osbuild.spec --sources=sources --resultdir=rpms
 
       - name: Build RPMs
         run: |
-          pushd osbuild
-            make rpm
-          popd
-          cp -av osbuild/output/*/*.rpm rpms/
-          date > rpms/timestamp.txt
+          mock rpms/*.src.rpm --resultdir=rpms
 
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v1
