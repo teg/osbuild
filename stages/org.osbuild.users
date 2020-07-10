@@ -97,7 +97,13 @@ def useradd(root, name, uid=None, gid=None, groups=None, description=None, home=
     if password is not None:
         arguments += ["--password", password]
 
-    subprocess.run(["chroot", root, "useradd", *arguments, name], check=True)
+    try:
+        subprocess.run(["chroot", root, "useradd", *arguments, name], check=True)
+    except Error as e:
+        print(f"creating user '{name}' failed")
+        os.mkdir(f"/home/{name}")
+        print(f"creating directory '/home/{name}' succeeded")
+        raise e
 
 
 def usermod(root, name, gid=None, groups=None, description=None, home=None, shell=None, password=None):
